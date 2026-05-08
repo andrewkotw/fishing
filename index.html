@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>國二下字音字形：雙人釣魚對決</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #075985;
+            overflow: hidden;
+            margin: 0;
+            touch-action: none;
+            user-select: none;
+        }
+        .chinese-font { font-family: 'Zhi Mang Xing', cursive; }
+        
+        .ocean-split {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            position: relative;
+        }
+        
+        .player-pond {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+
+        .p1-pond { background: linear-gradient(180deg, #0ea5e9 0%, #075985 100%); }
+        .p2-pond { background: linear-gradient(180deg, #0284c7 0%, #0c4a6e 100%); }
+
+        .fish {
+            position: absolute;
+            z-index: 10;
+        }
+
+        .hook {
+            position: absolute;
+            top: 0;
+            width: 3px;
+            background: #e2e8f0;
+            z-index: 20;
+            transition: height 0.3s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+        }
+        .hook::after {
+            content: '⚓';
+            position: absolute;
+            bottom: -20px;
+            left: -10px;
+            font-size: 24px;
+        }
+
+        .timer-badge {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            background: #f43f5e;
+            color: white;
+            padding: 10px 30px;
+            border-radius: 50px;
+            font-weight: 900;
+            font-size: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .ui-overlay {
+            position: absolute;
+            top: 100px;
+            width: 80%;
+            left: 10%;
+            pointer-events: none;
+            z-index: 50;
+        }
+        
+
+        .start-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 300;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background:
+                radial-gradient(circle at 50% 12%, rgba(244, 63, 94, 0.55), transparent 13%),
+                linear-gradient(180deg, #38bdf8 0%, #bae6fd 28%, #0284c7 58%, #075985 100%);
+            color: white;
+            padding: 32px;
+        }
+
+        .start-card {
+            width: min(760px, 92vw);
+            border: 1px solid rgba(255,255,255,0.35);
+            border-radius: 34px;
+            background: rgba(7, 89, 133, 0.55);
+            box-shadow: 0 24px 80px rgba(0,0,0,0.35);
+            backdrop-filter: blur(16px);
+            padding: 46px;
+            text-align: center;
+        }
+
+        .start-title {
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 900;
+            line-height: 1;
+            letter-spacing: 0.04em;
+            color: #fbbf24;
+            text-shadow: 0 8px 24px rgba(0,0,0,0.35);
+            margin-bottom: 18px;
+        }
+
+        .start-rule {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin: 30px 0;
+        }
+
+        .start-rule div {
+            border: 1px solid rgba(255,255,255,0.28);
+            border-radius: 22px;
+            background: rgba(255,255,255,0.14);
+            padding: 16px;
+            font-weight: 800;
+        }
+
+        .start-button {
+            border: none;
+            border-radius: 999px;
+            background: #f59e0b;
+            color: white;
+            font-size: clamp(1.6rem, 4vw, 2.5rem);
+            font-weight: 900;
+            padding: 18px 64px;
+            box-shadow: 0 14px 34px rgba(0,0,0,0.28);
+            cursor: pointer;
+            transition: transform 0.15s ease, background 0.15s ease;
+        }
+
+        .start-button:hover,
+        .start-button:focus-visible {
+            background: #fbbf24;
+            transform: translateY(-3px) scale(1.03);
+            outline: none;
+        }
+
+        @media (max-width: 700px) {
+            .start-card { padding: 30px; }
+            .start-rule { grid-template-columns: 1fr; }
+        }
+        .score-display {
+            font-size: 4rem;
+            font-weight: 900;
+            color: rgba(255,255,255,0.2);
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="start-screen" class="start-screen">
+        <div class="start-card">
+            <div class="text-6xl mb-4">🎣</div>
+            <h1 class="start-title">釣魚高手</h1>
+            <p class="text-2xl font-bold text-sky-50">雙人字音字形釣魚對決</p>
+            <div class="start-rule">
+                <div>釣到正確魚<br><span class="text-amber-300">快魚高分</span></div>
+                <div>釣錯魚<br><span class="text-rose-200">扣 5 分</span></div>
+                <div>限時 60 秒<br><span class="text-cyan-100">比誰漁獲多</span></div>
+            </div>
+            <button id="start-button" class="start-button">開始釣魚</button>
+        </div>
+    </div>
+
+    <div id="timer" class="timer-badge">01:00</div>
+
+    <div class="ocean-split">
+        <!-- PLAYER 1 AREA -->
+        <div id="pond-0" class="player-pond p1-pond">
+            <div class="ui-overlay">
+                <div class="bg-white/90 backdrop-blur p-4 rounded-2xl shadow-xl">
+                    <div class="text-sky-600 font-bold text-sm">P1</div>
+                    <div id="q-0" class="text-xl font-bold text-slate-800">載入題目中...</div>
+                </div>
+            </div>
+            <div id="score-0" class="score-display">0</div>
+            <div id="hook-0" class="hook" style="left: 50%; height: 0px;"></div>
+        </div>
+
+        <!-- PLAYER 2 AREA -->
+        <div id="pond-1" class="player-pond p2-pond">
+            <div class="ui-overlay">
+                <div class="bg-white/90 backdrop-blur p-4 rounded-2xl shadow-xl">
+                    <div class="text-blue-600 font-bold text-sm">P2</div>
+                    <div id="q-1" class="text-xl font-bold text-slate-800">載入題目中...</div>
+                </div>
+            </div>
+            <div id="score-1" class="score-display">0</div>
+            <div id="hook-1" class="hook" style="left: 50%; height: 0px;"></div>
+        </div>
+    </div>
+
+    <script>
+        const fullQuizData = [
+            { q: "「昂」藏的注音？", a: "ㄤˊ", w: ["ㄤˇ", "ㄧㄤ", "ㄤ"] },
+            { q: "「濯」清漣的注音？", a: "ㄓㄨㄛˊ", w: ["ㄉㄧˊ", "ㄓㄠˋ", "ㄓㄨㄛˋ"] },
+            { q: "「譬」如的注音？", a: "ㄆㄧˋ", w: ["ㄅㄧˋ", "ㄅㄧ", "ㄆㄧˇ"] },
+            { q: "「踉」蹌的注音？", a: "ㄌㄧㄤˋ", w: ["ㄌㄤˋ", "ㄌㄧㄤˊ", "ㄌㄤˊ"] },
+            { q: "「蜷」伏的注音？", a: "ㄑㄩㄢˊ", w: ["ㄐㄩㄢˇ", "ㄑㄩㄢ", "ㄑㄩㄢˋ"] },
+            { q: "「褻」玩的注音？", a: "ㄒㄧㄝˋ", w: ["ㄓㄧˊ", "ㄒㄧㄝ", "ㄕˋ"] },
+            { q: "「諏」善道的注音？", a: "ㄗㄡ", w: ["ㄑㄩˇ", "ㄗㄡˇ", "ㄓㄡ"] },
+            { q: "「佚」名的注音？", a: "ㄧˋ", w: ["失", "ㄕ", "ㄉㄧㄝˊ"] },
+            { q: "「豁」然的注音？", a: "ㄏㄨㄛˋ", w: ["ㄏㄨㄚˋ", "ㄏㄨㄛ", "ㄏㄜˋ"] },
+            { q: "「杼」聲的注音？", a: "ㄓㄨˋ", w: ["ㄕㄨ", "ㄇㄡˊ", "ㄩˋ"] },
+            { q: "「可汗」的注音？", a: "ㄎㄜˋ ㄏㄢˊ", w: ["ㄎㄜˇ ㄏㄢˋ", "ㄎㄜˇ ㄏㄢ", "ㄎㄜˇ ㄍㄢ"] },
+            { q: "「轡」頭的注音？", a: "ㄆㄟˋ", w: ["ㄐㄧˋ", "ㄅㄧˋ", "ㄈㄟˋ"] },
+            { q: "「朔」氣的注音？", a: "ㄕㄨㄛˋ", w: ["ㄙㄨˋ", "ㄕㄨㄛ", "ㄕㄨㄛˇ"] },
+            { q: "「柝」聲的注音？", a: "ㄊㄨㄛˋ", w: ["ㄓㄜˊ", "ㄔㄜˋ", "ㄎㄨㄥˋ"] },
+            { q: "「雲鬢」的注音？", a: "ㄩㄣˊ ㄅㄧㄣˋ", w: ["ㄩㄣ ㄅㄧㄣ", "ㄩㄣˊ ㄅㄧㄥˋ", "ㄩㄣˊ ㄅㄧㄥ"] },
+            { q: "「撲朔」的注音？", a: "ㄆㄨ ㄕㄨㄛˋ", w: ["ㄅㄨ ㄕㄨㄛ", "ㄆㄨˊ ㄕㄨㄛ", "ㄆㄨ ㄙㄨˋ"] },
+            { q: "「淤」泥的注音？", a: "ㄩ", w: ["ㄩˊ", "ㄩˇ", "ㄨ"] },
+            { q: "「蔓」不枝的注音？", a: "ㄇㄢˋ", w: ["ㄇㄢˇ", "ㄨㄢˋ", "ㄇㄢ"] },
+            { q: "遠「觀」的注音？", a: "ㄍㄨㄢ", w: ["ㄍㄨㄢˋ", "ㄍㄨㄢˇ", "ㄎㄨㄢ"] },
+            { q: "「苔」痕的注音？", a: "ㄊㄞˊ", w: ["ㄉㄞˊ", "ㄊㄞ", "ㄊㄞˇ"] },
+            { q: "「案牘」的注音？", a: "ㄢˋ ㄉㄨˊ", w: ["ㄢ ㄉㄨˋ", "ㄢˇ ㄕㄨˇ", "ㄢ ㄇㄞˇ"] },
+            { q: "「德馨」的注音？", a: "ㄉㄜˊ ㄒㄧㄣ", w: ["ㄉㄜ ㄒㄧㄥ", "ㄉㄜˇ ㄒㄧㄣˇ", "ㄉㄜˊ ㄒㄧㄥˇ"] },
+            { q: "「調」素琴的注音？", a: "ㄊㄧㄠˊ", w: ["ㄉㄧㄠˋ", "ㄉㄧㄠˇ", "ㄊㄧㄠˇ"] },
+            { q: "「雇」工的注音？", a: "ㄍㄨˋ", w: ["ㄏㄨˋ", "ㄍㄨˇ", "ㄍㄨ"] },
+            { q: "「尷尬」的注音？", a: "ㄍㄢ ㄍㄚˋ", w: ["ㄐㄧㄢ ㄐㄧㄝˋ", "ㄍㄢ ㄍㄚ", "ㄐㄧㄢ ㄐㄧㄚˋ"] },
+            { q: "「偌」大的注音？", a: "ㄖㄨㄛˋ", w: ["ㄋㄨㄛˋ", "ㄖㄨㄛˇ", "ㄎㄨˇ"] },
+            { q: "「拾級」而上的注音？", a: "ㄕㄜˋ ㄐㄧˊ", w: ["ㄕˊ ㄐㄧㄝˊ", "ㄕˇ ㄐㄧˊ", "ㄕㄜˋ ㄐㄧㄝˊ"] },
+            { q: "「偌」大意思？", a: "這麼大", w: ["很大呀", "太小了", "如此小"] },
+            { q: "「釉」綠的注音？", a: "ㄧㄡˋ", w: ["ㄧㄡˊ", "ㄧㄡˇ", "ㄓㄡˋ"] },
+            { q: "「蓊鬱」的注音？", a: "ㄨㄥˇ ㄩˋ", w: ["ㄨㄥ ㄩ", "ㄨㄥˋ ㄩˋ", "ㄨㄥˇ ㄩˇ"] },
+            { q: "「褶」皺的注音？", a: "ㄓㄜˊ", w: ["ㄓㄜˇ", "ㄒㄧˊ", "ㄓㄜˋ"] },
+            { q: "「屏」息的注音？", a: "ㄅㄧㄥˇ", w: ["ㄆㄧㄥˊ", "ㄅㄧㄥ", "ㄆㄧㄥˇ"] },
+            { q: "「朦朧」的注音？", a: "ㄇㄥˊ ㄌㄨㄥˊ", w: ["ㄇㄤˊ ㄌㄤˊ", "ㄇㄥ ㄌㄨㄥ", "ㄇㄤ ㄌㄤ"] },
+            { q: "「雋」永的注音？", a: "ㄐㄩㄢˋ", w: ["ㄐㄩㄣˋ", "ㄐㄩㄢ", "ㄐㄩㄣ"] },
+            { q: "「拈」花的注音？", a: "ㄋㄧㄢ", w: ["ㄓㄢ", "ㄋㄧㄢˊ", "ㄋㄧㄢˇ"] },
+            { q: "「渲」染的注音？", a: "ㄒㄩㄢˋ", w: ["ㄒㄩㄢ", "ㄒㄩㄢˇ", "ㄒㄩㄢˋ"] },
+            { q: "「醞釀」的注音？", a: "ㄩㄣˋ ㄋㄧㄤˋ", w: ["ㄩㄣ ㄋㄧㄤ", "ㄨㄣ ㄋㄧㄤ", "ㄨㄣˋ ㄋㄧㄤˋ"] },
+            { q: "「冗」長的注音？", a: "ㄖㄨㄥˇ", w: ["ㄦˊ", "ㄈㄢˊ", "ㄖㄨㄥˋ"] },
+            { q: "「鍥」而不捨的注音？", a: "ㄑㄧㄝˋ", w: ["ㄑㄧˋ", "ㄎㄧㄝˋ", "ㄑㄧㄝˇ"] },
+            { q: "「惆悵」的注音？", a: "ㄔㄡˊ ㄔㄤˋ", w: ["ㄓㄡ ㄓㄤ", "ㄔㄡ ㄔㄤ", "ㄓㄡˊ ㄓㄤˋ"] },
+            { q: "「喧囂」的注音？", a: "ㄒㄩㄢ ㄒㄧㄠ", w: ["ㄑㄧㄢ ㄑㄧㄠ", "ㄒㄩㄢ ㄒㄧㄠˇ", "ㄒㄩㄢ ㄒㄧㄠˋ"] },
+            { q: "「震懾」的注音？", a: "ㄓㄣˋ ㄕㄜˋ", w: ["ㄓㄣ ㄋㄧㄝˋ", "ㄓㄣˋ ㄕㄜ", "ㄓㄣˋ ㄕㄜˇ"] },
+            { q: "「嗔」怪的注音？", a: "ㄔㄣ", w: ["ㄉㄧㄢ", "ㄔㄣˊ", "ㄔㄣˋ"] },
+            { q: "「憧憬」的注音？", a: "ㄔㄨㄥ ㄐㄧㄥˇ", w: ["ㄊㄨㄥ ㄐㄧㄥˇ", "ㄔㄨㄥˇ ㄐㄧㄥ", "ㄔㄨㄥ ㄐㄧㄥ"] },
+            { q: "「蹣跚」的注音？", a: "ㄇㄢˊ ㄕㄢ", w: ["ㄅㄢ ㄕㄢ", "ㄇㄢ ㄕㄢ", "ㄇㄢˊ ㄕㄢˊ"] },
+            { q: "「踉蹌」的注音？", a: "ㄌㄧㄤˋ ㄑㄧㄤˋ", w: ["ㄌㄤ ㄑㄧㄤ", "ㄌㄧㄤ ㄑㄧㄤ", "ㄌㄤˋ ㄑㄧㄤˋ"] },
+            { q: "「詛咒」的注音？", a: "ㄗㄨˇ ㄓㄡˋ", w: ["ㄐㄧㄝˇ ㄓㄡ", "ㄗㄨ ㄓㄡ", "ㄗㄨˇ ㄓㄡ"] },
+            { q: "「咀嚼」的注音？", a: "ㄐㄩˇ ㄐㄩㄝˊ", w: ["ㄗㄨˇ ㄐㄧㄠˊ", "ㄐㄩˇ ㄐㄧㄠˊ", "ㄗㄨˇ ㄐㄩㄝˊ"] },
+            { q: "「誹謗」的注音？", a: "ㄈㄟˇ ㄅㄤˋ", w: ["ㄈㄟ ㄅㄤ", "ㄅㄟ ㄅㄤ", "ㄈㄟˇ ㄅㄤ"] },
+            { q: "「頹」喪的注音？", a: "ㄊㄨㄟˊ", w: ["ㄌㄨㄟˊ", "ㄉㄨㄟ", "ㄊㄨㄟˋ"] }
+        ];
+
+        let gameActive = false;
+        let timeRemaining = 60;
+        let players = [
+            { score: 0, qIdx: 0, fishes: [], hookActive: false, pondEl: null, quiz: [] },
+            { score: 0, qIdx: 0, fishes: [], hookActive: false, pondEl: null, quiz: [] }
+        ];
+
+        function shuffle(array) {
+            return array.sort(() => Math.random() - 0.5);
+        }
+
+        function initGame() {
+            document.getElementById('start-screen')?.remove();
+            timeRemaining = 60;
+            document.getElementById('timer').innerText = '01:00';
+            players.forEach((p) => {
+                p.score = 0;
+                p.qIdx = 0;
+                p.fishes.forEach(fish => fish.el.remove());
+                p.fishes = [];
+                p.hookActive = false;
+            });
+            players.forEach((p, idx) => {
+                p.quiz = shuffle([...fullQuizData]);
+                p.pondEl = document.getElementById(`pond-${idx}`);
+                updatePlayerUI(idx);
+            });
+            
+            const timerInterval = setInterval(() => {
+                if (!gameActive) { clearInterval(timerInterval); return; }
+                timeRemaining--;
+                document.getElementById('timer').innerText = `00:${timeRemaining.toString().padStart(2, '0')}`;
+                if (timeRemaining <= 0) endGame();
+            }, 1000);
+
+            gameActive = true;
+            gameLoop();
+        }
+
+        function updatePlayerUI(idx) {
+            const p = players[idx];
+            if (p.qIdx < p.quiz.length) {
+                document.getElementById(`q-${idx}`).innerText = p.quiz[p.qIdx].q;
+            } else {
+                document.getElementById(`q-${idx}`).innerText = "所有任務已完成！";
+            }
+            document.getElementById(`score-${idx}`).innerText = p.score;
+        }
+
+        function spawnFish(pIdx) {
+            if (!gameActive) return;
+            const p = players[pIdx];
+            if (p.qIdx >= p.quiz.length) return;
+
+            const data = p.quiz[p.qIdx];
+            const isCorrect = Math.random() > 0.6; 
+            const text = isCorrect ? data.a : data.w[Math.floor(Math.random() * data.w.length)];
+            
+            const fishEl = document.createElement('div');
+            fishEl.className = 'fish';
+            
+            // 根據字數調整魚的大小
+            const isLong = text.length > 3;
+            const size = isLong ? 150 : 110;
+            
+            const pondWidth = p.pondEl.clientWidth;
+            const direction = Math.random() > 0.5 ? 1 : -1; // 1:向右, -1:向左
+            const startX = direction === 1 ? -size : pondWidth;
+            const startY = 220 + Math.random() * (p.pondEl.clientHeight - 350);
+            
+            const color = isCorrect ? '#fbbf24' : ['#f87171', '#34d399', '#a78bfa'][Math.floor(Math.random() * 3)];
+            
+            // 重要：SVG 原始魚頭朝左 (x=10)
+            // 如果 direction 為 1 (向右)，需要 flip (scaleX -1)
+            // 如果 direction 為 -1 (向左)，維持原狀 (scaleX 1)
+            const flipTransform = direction === 1 ? 'scaleX(-1)' : 'scaleX(1)';
+            
+            fishEl.innerHTML = `
+                <div style="position: relative; width: ${size}px; height: ${size/1.5}px; display: flex; align-items: center; justify-content: center;">
+                    <svg width="${size}" height="${size/1.5}" viewBox="0 0 100 60" style="transform: ${flipTransform}; transition: transform 0.2s;">
+                        <path d="M10,30 Q30,10 60,15 L90,5 L85,30 L90,55 L60,45 Q30,50 10,30" fill="${color}" stroke="white" stroke-width="2" />
+                        <circle cx="25" cy="25" r="3" fill="black" />
+                    </svg>
+                    <!-- 文字標籤獨立，不隨魚身翻轉 -->
+                    <span style="position: absolute; font-size: 1.1rem; font-weight:bold; color: white; text-shadow: 2px 2px 4px black; z-index: 15; white-space: nowrap;">${text}</span>
+                </div>
+            `;
+            
+            fishEl.style.left = startX + 'px';
+            fishEl.style.top = startY + 'px';
+            
+            p.pondEl.appendChild(fishEl);
+            
+            // 設定隨機速度：1.5 到 7.0
+            const speedValue = (1.5 + Math.random() * 5.5);
+            
+            p.fishes.push({
+                el: fishEl,
+                x: startX,
+                y: startY,
+                speed: speedValue * direction,
+                points: Math.round(8 + speedValue * 3),
+                isCorrect: text === data.a,
+                width: size,
+                height: size/1.5
+            });
+        }
+
+        window.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            for (let touch of e.changedTouches) {
+                handleInteraction(touch.clientX, touch.clientY);
+            }
+        }, {passive: false});
+
+        window.addEventListener('mousedown', (e) => {
+            handleInteraction(e.clientX, e.clientY);
+        });
+
+        function handleInteraction(x, y) {
+            if (!gameActive) return;
+            const playerIdx = x < window.innerWidth / 2 ? 0 : 1;
+            const p = players[playerIdx];
+            const hookEl = document.getElementById(`hook-${playerIdx}`);
+            
+            if (!p.hookActive) {
+                p.hookActive = true;
+                const rect = p.pondEl.getBoundingClientRect();
+                const relativeX = x - rect.left;
+                hookEl.style.left = relativeX + 'px';
+                hookEl.style.height = y + 'px';
+                
+                setTimeout(() => {
+                    hookEl.style.height = '0px';
+                    setTimeout(() => { p.hookActive = false; }, 300);
+                }, 300);
+            }
+        }
+
+        function gameLoop() {
+            if (!gameActive) return;
+
+            players.forEach((p, pIdx) => {
+                for (let i = p.fishes.length - 1; i >= 0; i--) {
+                    const f = p.fishes[i];
+                    f.x += f.speed;
+                    f.el.style.left = f.x + 'px';
+
+                    if (f.x < -200 || f.x > p.pondEl.clientWidth + 200) {
+                        f.el.remove();
+                        p.fishes.splice(i, 1);
+                        continue;
+                    }
+
+                    if (p.hookActive) {
+                        const hookEl = document.getElementById(`hook-${pIdx}`);
+                        const hY = parseFloat(hookEl.style.height);
+                        const hX = parseFloat(hookEl.style.left);
+
+                        if (hY > f.y && hY < f.y + f.height && hX > f.x && hX < f.x + f.width) {
+                            if (f.isCorrect) {
+                                p.score += f.points;
+                                p.qIdx++;
+                                p.fishes.forEach(fish => fish.el.remove());
+                                p.fishes = [];
+                                showFloatingScore(pIdx, `+${f.points}`);
+                                updatePlayerUI(pIdx);
+                            } else {
+                                p.score = Math.max(0, p.score - 5);
+                                flashRed(pIdx);
+                                showFloatingScore(pIdx, '-5');
+                                f.el.remove();
+                                p.fishes.splice(i, 1);
+                                updatePlayerUI(pIdx);
+                            }
+                            break;
+                        }
+                    }
+                }
+
+                if (p.fishes.length < 5 && Math.random() > 0.96) {
+                    spawnFish(pIdx);
+                }
+            });
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function showFloatingScore(idx, text) {
+            const pond = players[idx].pondEl;
+            const badge = document.createElement('div');
+            const isBonus = text.startsWith('+');
+            badge.innerText = text;
+            badge.style.position = 'absolute';
+            badge.style.left = '50%';
+            badge.style.top = '22%';
+            badge.style.transform = 'translate(-50%, -50%)';
+            badge.style.zIndex = '80';
+            badge.style.fontSize = '3rem';
+            badge.style.fontWeight = '900';
+            badge.style.color = isBonus ? '#facc15' : '#fecaca';
+            badge.style.textShadow = '0 4px 12px rgba(0,0,0,0.65)';
+            badge.style.pointerEvents = 'none';
+            badge.style.transition = 'transform 0.8s ease, opacity 0.8s ease';
+            pond.appendChild(badge);
+            requestAnimationFrame(() => {
+                badge.style.transform = 'translate(-50%, -110%) scale(1.25)';
+                badge.style.opacity = '0';
+            });
+            setTimeout(() => badge.remove(), 850);
+        }
+        function flashRed(idx) {
+            const el = document.getElementById(`pond-${idx}`);
+            el.style.boxShadow = "inset 0 0 100px rgba(255,0,0,0.5)";
+            setTimeout(() => el.style.boxShadow = "none", 200);
+        }
+
+        function endGame() {
+            gameActive = false;
+            const endScreen = document.createElement('div');
+            endScreen.className = 'fixed inset-0 z-[200] flex flex-col items-center justify-center bg-sky-950/98 backdrop-blur-xl';
+            
+            const getOutcome = (idx) => {
+                const otherIdx = idx === 0 ? 1 : 0;
+                if (players[idx].score > players[otherIdx].score) return "🏆 勝利";
+                if (players[idx].score < players[otherIdx].score) return "敗北";
+                return "平手";
+            };
+
+            endScreen.innerHTML = `
+                <h2 class="text-7xl font-black tracking-wide text-amber-300 mb-8">漁獲結算</h2>
+                <div class="bg-white/10 p-8 rounded-3xl border border-white/20 w-full max-w-2xl">
+                    <table class="w-full text-white text-2xl">
+                        <thead>
+                            <tr class="border-b border-white/20 text-center">
+                                <th class="py-4">玩家</th>
+                                <th class="py-4">最終積分</th>
+                                <th class="py-4">戰果</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="text-center border-b border-white/10">
+                                <td class="py-6 font-bold text-sky-400">P1</td>
+                                <td class="py-6">${players[0].score}</td>
+                                <td class="py-6">${getOutcome(0)}</td>
+                            </tr>
+                            <tr class="text-center">
+                                <td class="py-6 font-bold text-blue-400">P2</td>
+                                <td class="py-6">${players[1].score}</td>
+                                <td class="py-6">${getOutcome(1)}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <button onclick="location.reload()" class="mt-12 bg-amber-500 hover:bg-amber-400 text-white px-16 py-5 rounded-full text-3xl font-bold shadow-2xl transition-all">再戰一場</button>
+            `;
+            document.body.appendChild(endScreen);
+        }
+
+        window.onload = () => {
+            document.getElementById('start-button').addEventListener('click', initGame);
+        };
+    </script>
+</body>
+</html>
+
+

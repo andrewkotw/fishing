@@ -369,8 +369,8 @@
                 height: size/1.5
             });
         }
-
         window.addEventListener('touchstart', (e) => {
+            if (document.getElementById('start-screen')) return;
             e.preventDefault();
             for (let touch of e.changedTouches) {
                 handleInteraction(touch.clientX, touch.clientY);
@@ -520,12 +520,19 @@
             `;
             document.body.appendChild(endScreen);
         }
-
         window.onload = () => {
-            document.getElementById('start-button').addEventListener('click', initGame);
+            const startButton = document.getElementById('start-button');
+            const startGame = (event) => {
+                event?.preventDefault();
+                if (!document.getElementById('start-screen')) return;
+                initGame();
+            };
+            startButton.addEventListener('click', startGame);
+            startButton.addEventListener('touchend', startGame, { passive: false });
         };
     </script>
 </body>
 </html>
+
 
 

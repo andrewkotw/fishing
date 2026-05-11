@@ -149,7 +149,103 @@
             transform: translateY(-3px) scale(1.03);
             outline: none;
         }
+        .timer-badge.warning {
+            background: #dc2626;
+            animation: timer-pulse 0.5s ease-in-out infinite alternate;
+        }
 
+        @keyframes timer-pulse {
+            from { transform: translateX(-50%) scale(1); box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+            to { transform: translateX(-50%) scale(1.16); box-shadow: 0 0 28px rgba(248,113,113,0.85); }
+        }
+
+        .sound-toggle {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            z-index: 120;
+            border: 1px solid rgba(255,255,255,0.45);
+            border-radius: 999px;
+            background: rgba(255,255,255,0.18);
+            color: white;
+            padding: 10px 18px;
+            font-weight: 900;
+            font-size: 1rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 22px rgba(0,0,0,0.2);
+        }
+
+        .countdown-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 260;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            background: rgba(2, 132, 199, 0.18);
+            color: #fef3c7;
+            font-size: clamp(6rem, 16vw, 13rem);
+            font-weight: 900;
+            text-shadow: 0 10px 34px rgba(0,0,0,0.45);
+        }
+
+        .countdown-pop {
+            animation: countdown-pop 0.75s ease both;
+        }
+
+        @keyframes countdown-pop {
+            0% { transform: scale(0.55); opacity: 0; }
+            35% { transform: scale(1.12); opacity: 1; }
+            100% { transform: scale(0.92); opacity: 0.9; }
+        }
+
+        .splash {
+            position: absolute;
+            z-index: 70;
+            width: 86px;
+            height: 42px;
+            border-radius: 50%;
+            border: 5px solid rgba(186, 230, 253, 0.9);
+            pointer-events: none;
+            transform: translate(-50%, -50%) scale(0.35);
+            animation: splash-pop 0.55s ease-out forwards;
+        }
+
+        .splash::before,
+        .splash::after {
+            content: '';
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-radius: 999px;
+            background: rgba(224, 242, 254, 0.95);
+            top: -12px;
+        }
+
+        .splash::before { left: 18px; }
+        .splash::after { right: 18px; }
+
+        @keyframes splash-pop {
+            to { opacity: 0; transform: translate(-50%, -50%) scale(1.25); }
+        }
+
+        .cooldown-hint {
+            position: absolute;
+            z-index: 75;
+            color: white;
+            background: rgba(15, 23, 42, 0.68);
+            border-radius: 999px;
+            padding: 8px 18px;
+            font-weight: 900;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            animation: cooldown-pop 0.5s ease-out forwards;
+        }
+
+        @keyframes cooldown-pop {
+            to { opacity: 0; transform: translate(-50%, -90%) scale(1.08); }
+        }
         @media (max-width: 700px) {
             .start-card { padding: 30px; }
             .start-rule { grid-template-columns: 1fr; }
@@ -181,6 +277,7 @@
     </div>
 
     <div id="timer" class="timer-badge">01:00</div>
+    <button id="sound-toggle" class="sound-toggle" type="button">音效：開</button>
 
     <div class="ocean-split">
         <!-- PLAYER 1 AREA -->
@@ -216,10 +313,10 @@
             { q: "「踉」蹌的注音？", a: "ㄌㄧㄤˋ", w: ["ㄌㄤˋ", "ㄌㄧㄤˊ", "ㄌㄤˊ"] },
             { q: "「蜷」伏的注音？", a: "ㄑㄩㄢˊ", w: ["ㄐㄩㄢˇ", "ㄑㄩㄢ", "ㄑㄩㄢˋ"] },
             { q: "「褻」玩的注音？", a: "ㄒㄧㄝˋ", w: ["ㄓㄧˊ", "ㄒㄧㄝ", "ㄕˋ"] },
-            { q: "諮「諏」善道的注音？", a: "ㄗㄡ", w: ["ㄑㄩˇ", "ㄗㄡˇ", "ㄓㄡ"] },
+            { q: "「諏」善道的注音？", a: "ㄗㄡ", w: ["ㄑㄩˇ", "ㄗㄡˇ", "ㄓㄡ"] },
             { q: "「佚」名的注音？", a: "ㄧˋ", w: ["失", "ㄕ", "ㄉㄧㄝˊ"] },
             { q: "「豁」然的注音？", a: "ㄏㄨㄛˋ", w: ["ㄏㄨㄚˋ", "ㄏㄨㄛ", "ㄏㄜˋ"] },
-            { q: "機「杼」聲的注音？", a: "ㄓㄨˋ", w: ["ㄕㄨ", "ㄇㄡˊ", "ㄩˋ"] },
+            { q: "「杼」聲的注音？", a: "ㄓㄨˋ", w: ["ㄕㄨ", "ㄇㄡˊ", "ㄩˋ"] },
             { q: "「可汗」的注音？", a: "ㄎㄜˋ ㄏㄢˊ", w: ["ㄎㄜˇ ㄏㄢˋ", "ㄎㄜˇ ㄏㄢ", "ㄎㄜˇ ㄍㄢ"] },
             { q: "「轡」頭的注音？", a: "ㄆㄟˋ", w: ["ㄐㄧˋ", "ㄅㄧˋ", "ㄈㄟˋ"] },
             { q: "「朔」氣的注音？", a: "ㄕㄨㄛˋ", w: ["ㄙㄨˋ", "ㄕㄨㄛ", "ㄕㄨㄛˇ"] },
@@ -244,14 +341,14 @@
             { q: "「屏」息的注音？", a: "ㄅㄧㄥˇ", w: ["ㄆㄧㄥˊ", "ㄅㄧㄥ", "ㄆㄧㄥˇ"] },
             { q: "「朦朧」的注音？", a: "ㄇㄥˊ ㄌㄨㄥˊ", w: ["ㄇㄤˊ ㄌㄤˊ", "ㄇㄥ ㄌㄨㄥ", "ㄇㄤ ㄌㄤ"] },
             { q: "「雋」永的注音？", a: "ㄐㄩㄢˋ", w: ["ㄐㄩㄣˋ", "ㄐㄩㄢ", "ㄐㄩㄣ"] },
-            { q: "「拈」花的注音？", a: "ㄋㄧㄢˊ", w: ["ㄓㄢ", "ㄋㄧㄢ", "ㄋㄧㄢˇ"] },
+            { q: "「拈」花的注音？", a: "ㄋㄧㄢ", w: ["ㄓㄢ", "ㄋㄧㄢˊ", "ㄋㄧㄢˇ"] },
             { q: "「渲」染的注音？", a: "ㄒㄩㄢˋ", w: ["ㄒㄩㄢ", "ㄒㄩㄢˇ", "ㄒㄩㄢˋ"] },
             { q: "「醞釀」的注音？", a: "ㄩㄣˋ ㄋㄧㄤˋ", w: ["ㄩㄣ ㄋㄧㄤ", "ㄨㄣ ㄋㄧㄤ", "ㄨㄣˋ ㄋㄧㄤˋ"] },
             { q: "「冗」長的注音？", a: "ㄖㄨㄥˇ", w: ["ㄦˊ", "ㄈㄢˊ", "ㄖㄨㄥˋ"] },
             { q: "「鍥」而不捨的注音？", a: "ㄑㄧㄝˋ", w: ["ㄑㄧˋ", "ㄎㄧㄝˋ", "ㄑㄧㄝˇ"] },
             { q: "「惆悵」的注音？", a: "ㄔㄡˊ ㄔㄤˋ", w: ["ㄓㄡ ㄓㄤ", "ㄔㄡ ㄔㄤ", "ㄓㄡˊ ㄓㄤˋ"] },
             { q: "「喧囂」的注音？", a: "ㄒㄩㄢ ㄒㄧㄠ", w: ["ㄑㄧㄢ ㄑㄧㄠ", "ㄒㄩㄢ ㄒㄧㄠˇ", "ㄒㄩㄢ ㄒㄧㄠˋ"] },
-            { q: "「震懾」的注音？", a: "ㄓㄣˋ ㄓㄜˊ", w: ["ㄓㄣ ㄋㄧㄝˋ", "ㄓㄣˋ ㄓㄜˋ", "ㄓㄣˋ ㄕㄜˇ"] },
+            { q: "「震懾」的注音？", a: "ㄓㄣˋ ㄕㄜˋ", w: ["ㄓㄣ ㄋㄧㄝˋ", "ㄓㄣˋ ㄕㄜ", "ㄓㄣˋ ㄕㄜˇ"] },
             { q: "「嗔」怪的注音？", a: "ㄔㄣ", w: ["ㄉㄧㄢ", "ㄔㄣˊ", "ㄔㄣˋ"] },
             { q: "「憧憬」的注音？", a: "ㄔㄨㄥ ㄐㄧㄥˇ", w: ["ㄊㄨㄥ ㄐㄧㄥˇ", "ㄔㄨㄥˇ ㄐㄧㄥ", "ㄔㄨㄥ ㄐㄧㄥ"] },
             { q: "「蹣跚」的注音？", a: "ㄇㄢˊ ㄕㄢ", w: ["ㄅㄢ ㄕㄢ", "ㄇㄢ ㄕㄢ", "ㄇㄢˊ ㄕㄢˊ"] },
@@ -264,43 +361,92 @@
 
         let gameActive = false;
         let timeRemaining = 60;
+        let timerInterval = null;
+        let soundEnabled = true;
+        let audioCtx = null;
+        let fishColorBag = [];
         let players = [
-            { score: 0, qIdx: 0, fishes: [], hookActive: false, pondEl: null, quiz: [] },
-            { score: 0, qIdx: 0, fishes: [], hookActive: false, pondEl: null, quiz: [] }
+            { score: 0, qIdx: 0, fishes: [], hookActive: false, castReadyAt: 0, pondEl: null, quiz: [] },
+            { score: 0, qIdx: 0, fishes: [], hookActive: false, castReadyAt: 0, pondEl: null, quiz: [] }
         ];
 
         function shuffle(array) {
             return array.sort(() => Math.random() - 0.5);
         }
+        function getFishColor() {
+            if (fishColorBag.length === 0) {
+                fishColorBag = shuffle(['#fbbf24', '#f87171', '#34d399', '#a78bfa', '#38bdf8', '#fb7185', '#c084fc']);
+            }
+            return fishColorBag.pop();
+        }
 
         function initGame() {
             document.getElementById('start-screen')?.remove();
+            gameActive = false;
             timeRemaining = 60;
-            document.getElementById('timer').innerText = '01:00';
+            updateTimerDisplay();
+            if (timerInterval) clearInterval(timerInterval);
             players.forEach((p) => {
                 p.score = 0;
                 p.qIdx = 0;
                 p.fishes.forEach(fish => fish.el.remove());
                 p.fishes = [];
                 p.hookActive = false;
+                p.castReadyAt = 0;
             });
             players.forEach((p, idx) => {
                 p.quiz = shuffle([...fullQuizData]);
                 p.pondEl = document.getElementById(`pond-${idx}`);
                 updatePlayerUI(idx);
             });
-            
-            const timerInterval = setInterval(() => {
+            startCountdown(startRound);
+        }
+
+        function startRound() {
+            gameActive = true;
+            playSound('start');
+            timerInterval = setInterval(() => {
                 if (!gameActive) { clearInterval(timerInterval); return; }
                 timeRemaining--;
-                document.getElementById('timer').innerText = `00:${timeRemaining.toString().padStart(2, '0')}`;
+                updateTimerDisplay();
                 if (timeRemaining <= 0) endGame();
             }, 1000);
-
-            gameActive = true;
             gameLoop();
         }
 
+        function updateTimerDisplay() {
+            const timer = document.getElementById('timer');
+            const minutes = Math.floor(timeRemaining / 60).toString().padStart(2, '0');
+            const seconds = (timeRemaining % 60).toString().padStart(2, '0');
+            timer.innerText = `${minutes}:${seconds}`;
+            timer.classList.toggle('warning', timeRemaining <= 10 && timeRemaining > 0);
+            if (timeRemaining <= 10 && timeRemaining > 0) playSound('tick');
+        }
+
+        function startCountdown(done) {
+            const overlay = document.createElement('div');
+            overlay.className = 'countdown-overlay';
+            document.body.appendChild(overlay);
+            const steps = ['3', '2', '1', '開始！'];
+            let idx = 0;
+            const showStep = () => {
+                overlay.innerText = steps[idx];
+                overlay.classList.remove('countdown-pop');
+                void overlay.offsetWidth;
+                overlay.classList.add('countdown-pop');
+                playSound(idx < 3 ? 'count' : 'start');
+                idx++;
+                if (idx < steps.length) {
+                    setTimeout(showStep, 820);
+                } else {
+                    setTimeout(() => {
+                        overlay.remove();
+                        done();
+                    }, 720);
+                }
+            };
+            showStep();
+        }
         function updatePlayerUI(idx) {
             const p = players[idx];
             if (p.qIdx < p.quiz.length) {
@@ -330,9 +476,11 @@
             const pondWidth = p.pondEl.clientWidth;
             const direction = Math.random() > 0.5 ? 1 : -1; // 1:向右, -1:向左
             const startX = direction === 1 ? -size : pondWidth;
-            const startY = 220 + Math.random() * (p.pondEl.clientHeight - 350);
+            const minY = 210;
+            const maxY = Math.max(minY + 40, p.pondEl.clientHeight - size / 1.5 - 40);
+            const startY = minY + Math.random() * (maxY - minY);
             
-            const color = isCorrect ? '#fbbf24' : ['#f87171', '#34d399', '#a78bfa'][Math.floor(Math.random() * 3)];
+            const color = getFishColor();
             
             // 重要：SVG 原始魚頭朝左 (x=10)
             // 如果 direction 為 1 (向右)，需要 flip (scaleX -1)
@@ -363,6 +511,10 @@
                 x: startX,
                 y: startY,
                 speed: speedValue * direction,
+                baseY: startY,
+                swimPhase: Math.random() * Math.PI * 2,
+                swimRange: 10 + Math.random() * 24,
+                swimSpeed: 0.0018 + Math.random() * 0.0028,
                 points: Math.round(8 + speedValue * 3),
                 isCorrect: text === data.a,
                 width: size,
@@ -371,6 +523,7 @@
         }
         window.addEventListener('touchstart', (e) => {
             if (document.getElementById('start-screen')) return;
+            if (e.target.closest('#sound-toggle')) return;
             e.preventDefault();
             for (let touch of e.changedTouches) {
                 handleInteraction(touch.clientX, touch.clientY);
@@ -378,6 +531,7 @@
         }, {passive: false});
 
         window.addEventListener('mousedown', (e) => {
+            if (e.target.closest('#sound-toggle')) return;
             handleInteraction(e.clientX, e.clientY);
         });
 
@@ -386,29 +540,42 @@
             const playerIdx = x < window.innerWidth / 2 ? 0 : 1;
             const p = players[playerIdx];
             const hookEl = document.getElementById(`hook-${playerIdx}`);
-            
-            if (!p.hookActive) {
-                p.hookActive = true;
-                const rect = p.pondEl.getBoundingClientRect();
-                const relativeX = x - rect.left;
-                hookEl.style.left = relativeX + 'px';
-                hookEl.style.height = y + 'px';
-                
-                setTimeout(() => {
-                    hookEl.style.height = '0px';
-                    setTimeout(() => { p.hookActive = false; }, 300);
-                }, 300);
-            }
-        }
+            const now = performance.now();
+            const cooldownMs = 650;
+            const rect = p.pondEl.getBoundingClientRect();
+            const relativeX = x - rect.left;
+            const relativeY = y - rect.top;
 
+            if (p.hookActive || now < p.castReadyAt) {
+                showCooldownHint(playerIdx, relativeX, relativeY);
+                return;
+            }
+
+            p.hookActive = true;
+            p.castReadyAt = now + cooldownMs;
+            hookEl.style.left = relativeX + 'px';
+            hookEl.style.height = relativeY + 'px';
+            playSound('cast');
+
+            setTimeout(() => {
+                hookEl.style.height = '0px';
+                setTimeout(() => { p.hookActive = false; }, 300);
+            }, 300);
+        }
         function gameLoop() {
             if (!gameActive) return;
+
+            const now = performance.now();
 
             players.forEach((p, pIdx) => {
                 for (let i = p.fishes.length - 1; i >= 0; i--) {
                     const f = p.fishes[i];
                     f.x += f.speed;
+                    const minSwimY = 180;
+                    const maxSwimY = Math.max(minSwimY, p.pondEl.clientHeight - f.height - 30);
+                    f.y = Math.min(maxSwimY, Math.max(minSwimY, f.baseY + Math.sin(now * f.swimSpeed + f.swimPhase) * f.swimRange));
                     f.el.style.left = f.x + 'px';
+                    f.el.style.top = f.y + 'px';
 
                     if (f.x < -200 || f.x > p.pondEl.clientWidth + 200) {
                         f.el.remove();
@@ -420,21 +587,26 @@
                         const hookEl = document.getElementById(`hook-${pIdx}`);
                         const hY = parseFloat(hookEl.style.height);
                         const hX = parseFloat(hookEl.style.left);
-
                         if (hY > f.y && hY < f.y + f.height && hX > f.x && hX < f.x + f.width) {
+                            showSplash(pIdx, hX, hY);
                             if (f.isCorrect) {
                                 p.score += f.points;
                                 p.qIdx++;
-                                p.fishes.forEach(fish => fish.el.remove());
+                                p.fishes.forEach(fish => {
+                                    if (fish !== f) fish.el.remove();
+                                });
                                 p.fishes = [];
                                 showFloatingScore(pIdx, `+${f.points}`);
+                                animateCaughtFish(f, pIdx);
+                                playSound('correct');
                                 updatePlayerUI(pIdx);
                             } else {
                                 p.score = Math.max(0, p.score - 5);
                                 flashRed(pIdx);
                                 showFloatingScore(pIdx, '-5');
-                                f.el.remove();
                                 p.fishes.splice(i, 1);
+                                animateEscapeFish(f);
+                                playSound('wrong');
                                 updatePlayerUI(pIdx);
                             }
                             break;
@@ -450,6 +622,81 @@
             requestAnimationFrame(gameLoop);
         }
 
+        function showSplash(idx, x, y) {
+            const splash = document.createElement('div');
+            splash.className = 'splash';
+            splash.style.left = x + 'px';
+            splash.style.top = y + 'px';
+            players[idx].pondEl.appendChild(splash);
+            setTimeout(() => splash.remove(), 600);
+        }
+
+        function animateCaughtFish(f, idx) {
+            f.el.style.zIndex = '90';
+            f.el.style.transition = 'transform 0.7s ease, opacity 0.7s ease, top 0.7s ease';
+            f.el.style.transform = 'translateY(-120px) rotate(-18deg) scale(0.82)';
+            f.el.style.opacity = '0';
+            setTimeout(() => f.el.remove(), 760);
+        }
+
+        function animateEscapeFish(f) {
+            const escapeDirection = f.speed >= 0 ? 1 : -1;
+            f.el.style.zIndex = '85';
+            f.el.style.transition = 'transform 0.55s ease, opacity 0.55s ease';
+            f.el.style.transform = `translate(${escapeDirection * 120}px, -36px) rotate(${escapeDirection * 18}deg) scale(1.08)`;
+            f.el.style.opacity = '0';
+            setTimeout(() => f.el.remove(), 620);
+        }
+
+        function showCooldownHint(idx, x, y) {
+            const hint = document.createElement('div');
+            hint.className = 'cooldown-hint';
+            hint.innerText = '等一下！';
+            hint.style.left = x + 'px';
+            hint.style.top = y + 'px';
+            players[idx].pondEl.appendChild(hint);
+            setTimeout(() => hint.remove(), 520);
+        }
+
+        function unlockAudio() {
+            if (!soundEnabled) return;
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            try {
+                unlockAudio();
+                if (!audioCtx) return;
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                const settings = {
+                    cast: [260, 0.07, 'sine'],
+                    count: [520, 0.08, 'triangle'],
+                    start: [760, 0.16, 'triangle'],
+                    correct: [880, 0.18, 'triangle'],
+                    wrong: [150, 0.16, 'sawtooth'],
+                    tick: [620, 0.04, 'square'],
+                    end: [420, 0.28, 'sine']
+                }[type] || [440, 0.08, 'sine'];
+                osc.type = settings[2];
+                osc.frequency.setValueAtTime(settings[0], now);
+                if (type === 'correct') osc.frequency.exponentialRampToValueAtTime(1320, now + settings[1]);
+                if (type === 'wrong') osc.frequency.exponentialRampToValueAtTime(90, now + settings[1]);
+                gain.gain.setValueAtTime(0.0001, now);
+                gain.gain.exponentialRampToValueAtTime(0.08, now + 0.01);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + settings[1]);
+                osc.connect(gain).connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + settings[1] + 0.02);
+            } catch (error) {
+                soundEnabled = false;
+                const toggle = document.getElementById('sound-toggle');
+                if (toggle) toggle.innerText = '音效：關';
+            }
+        }
         function showFloatingScore(idx, text) {
             const pond = players[idx].pondEl;
             const badge = document.createElement('div');
@@ -481,6 +728,9 @@
 
         function endGame() {
             gameActive = false;
+            if (timerInterval) clearInterval(timerInterval);
+            document.getElementById('timer').classList.remove('warning');
+            playSound('end');
             const endScreen = document.createElement('div');
             endScreen.className = 'fixed inset-0 z-[200] flex flex-col items-center justify-center bg-sky-950/98 backdrop-blur-xl';
             
@@ -522,17 +772,41 @@
         }
         window.onload = () => {
             const startButton = document.getElementById('start-button');
+            const soundToggle = document.getElementById('sound-toggle');
+            const updateSoundButton = () => {
+                soundToggle.innerText = soundEnabled ? '音效：開' : '音效：關';
+            };
             const startGame = (event) => {
                 event?.preventDefault();
                 if (!document.getElementById('start-screen')) return;
+                unlockAudio();
                 initGame();
             };
+            soundToggle.addEventListener('click', (event) => {
+                event.preventDefault();
+                soundEnabled = !soundEnabled;
+                if (soundEnabled) unlockAudio();
+                updateSoundButton();
+            });
+            soundToggle.addEventListener('touchend', (event) => {
+                event.preventDefault();
+                soundEnabled = !soundEnabled;
+                if (soundEnabled) unlockAudio();
+                updateSoundButton();
+            }, { passive: false });
             startButton.addEventListener('click', startGame);
             startButton.addEventListener('touchend', startGame, { passive: false });
-        };
-    </script>
+            updateSoundButton();
+        };</script>
 </body>
 </html>
+
+
+
+
+
+
+
 
 
 
